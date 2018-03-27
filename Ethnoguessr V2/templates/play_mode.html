@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+	<link rel="stylesheet" href="../static/css/play_mode.css">
+</head>
+
+<body>
+
+<div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+</div>
+
+<div class="btnHolder" style="height: 80%;width: 85%;">
+	<div style="float: left;">
+      <input type="button" id="cont_btn" class="btn btn-default" value="CONTINUOUS MODE">
+	</div>
+
+	<div style="float: right;">
+      <input type="button" id="chal_btn" class="btn btn-default" value="CHALLENGE MODE">
+	</div>
+</div>
+
+</body>
+
+<script type="text/javascript">
+	$(document).ready(function () {
+	    $("#home_btn").click(function () {
+	      window.location.href = '/'
+	    });
+
+	    $("#cont_btn").click(function () {
+	      window.location.href = '/play'
+	    });
+
+	    $("#chal_btn").click(function () {
+	      window.location.href = '/challenge'
+	    });
+	});
+
+</script>
+
+</html>

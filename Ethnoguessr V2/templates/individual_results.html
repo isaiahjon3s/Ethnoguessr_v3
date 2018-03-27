@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+	<link rel="stylesheet" href="/static/css/register.css">
+	<link rel="stylesheet" href="/static/css/individual_results.css">
+	<meta property="data" data="{{data}}">
+</head>
+
+<body>
+
+<div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="back_btn" class="btn btn-default" value="BACK">
+    </div>
+</div>
+
+<div id="playHolder">
+	<div id="map"></div>
+
+
+	<div id="table1">
+		<table align="center">
+		  <tr>
+		    <th>Round</th>
+		    <th>Score</th>
+		  </tr>
+		  {% for item in data %}
+		  <tr>
+			<th>{{item[0]}}</th>
+		    <th>{{item[1]}}</th>
+		  </tr>
+		  {% endfor %}
+		</table>
+	</div>
+
+</div>
+
+
+<script>
+var map;
+var markers = [];
+var score;
+var link;
+
+function initMap(){
+	map = new google.maps.Map(document.getElementById('map'),{
+		zoom: 1,
+		center: {lat: 0.0, lng: 0.0},
+		map: map,
+		gestureHandling: 'greedy'
+	});
+
+	var c = JSON.parse(document.querySelector("meta[property='data']").getAttribute("data"));
+
+	for (i = 0; i < c.length; i++) {
+		a = JSON.parse(c[i][2].replace(/'/g, '"'));
+		b = JSON.parse(c[i][3].replace(/'/g, '"'));
+		latLngA = new google.maps.LatLng(a['lat'], a['lng']);
+		latLngB = new google.maps.LatLng(b['lat'], b['lng']);
+		label = 'G' + (i+1).toString();
+		console.log(label);
+    	addMarkers(latLngA,latLngB,i+1,label);
+	}
+}
+
+function addMarkers(location1,location2,i,label){
+ 	var marker1 = new google.maps.Marker({
+		position: location1,
+		label: label,
+		map: map
+	});
+
+	var marker2 = new google.maps.Marker({
+		position: location2,
+		icon: 'https://i.imgur.com/hUZBut7.png',
+		map: map
+	});
+
+	lat1 = marker1.getPosition().lat();
+	lng1 = marker1.getPosition().lng();
+
+	lat2 = marker2.getPosition().lat();
+	lng2 = marker2.getPosition().lng();
+
+	markers.push(marker1);
+	markers.push(marker2);
+	marker1.setMap(map);
+	marker2.setMap(map);
+
+	var line = new google.maps.Polyline({
+	    path: [location1,location2],
+	    geodesic: true,
+	    strokeColor: '#FF0000',
+	    strokeOpacity: 0.7,
+	    strokeWeight: 1,
+	    map: map
+	});
+}
+
+$(document).ready(function () {
+    $("#home_btn").click(function () {
+      window.location.href = '/'
+    });
+    $("#back_btn").click(function () {
+    	var path = window.location.pathname;
+    	path = path.slice(0,-12);
+     	window.location.href = '../../../..' + path;
+    });
+});
+
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC5yfaa66ixSRJXzugJcIO40XMUUcqxqcQ&callback=initMap&libraries=geometry"></script>
+
+</body>
+</html>

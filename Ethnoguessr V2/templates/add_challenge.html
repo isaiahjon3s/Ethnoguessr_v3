@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+    <link rel="stylesheet" href="../static/css/register.css">
+    <link rel="stylesheet" href="../static/css/add_challenge.css">
+</head>
+
+<body >
+  <div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+  </div>
+
+  <div class = "container">
+  <h4 style="padding-left: 5%;padding-top: 1%;  font-family: 'Gill Sans', sans-serif;font-size: 1.7em;">Create your own challenge</h4>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages%}
+          <p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{message}}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- submit forms -->
+  <div>
+    <div class="btnHolder2">
+      <input type="button" id="add_btn" class="btn btn-default" value="Add another picture">
+    </div>
+  </div>
+
+  <div id="TitleHolder">
+    <form action="/add_challenge/submit" method="post">
+      <input style="margin-left: 5%;" type="text" name="rounds" placeholder="Number of Rounds" value="{{request.form.rounds}}">
+      <input type="text" name="title" placeholder="Challenge Title" value="{{request.form.title}}">
+      <input id="submit_btn" class="btn btn-default" type="submit" value="Submit Challenge">
+    </form>
+  </div>
+
+  <div id="FormHolder">
+  </div>
+
+</body>
+
+{% raw %}
+<script type="text/javascript">
+var i = 0;
+  $(document).ready(function () {
+      $("#home_btn").click(function () {
+        window.location.href = '/'
+      });
+      $("#add_btn").click(function () {
+        $("form").append('<p style="padding-left: 5%;font: bold 16px/1 "helvetica neue", helvetica, arial, sans-serif;">Round ' + (i + 1) + '</p><input style="margin-left: 5%;" type="text" placeholder="Link" name="link'  + i + '" value="{{request.form.link' + i + '}}"></p><input style="margin-left: 5%;" type="text" placeholder="Latitude" name="xcoordinate' + i + '" value="{{request.form.xcoordinate' + i + '}}"><input style="margin-left: 2%;" type="text" placeholder="Longitude" name="ycoordinate' + i + '" value="{{request.form.ycoordinate' + i + '}}">');
+        i += 1
+      });
+      $("#home_btn").click(function () {
+        window.location.href = '/'
+      });
+  });
+</script>
+{% endraw %}
+
+</html>

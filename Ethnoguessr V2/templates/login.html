@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+    <link rel="stylesheet" href="../static/css/login.css">
+</head>
+
+<body >
+	<div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+  </div>
+
+	<div class="logHolder" style="padding-left: 5%;padding-top: 2%">
+		<h1 id="log">PLEASE LOG IN</h1>
+	</div>
+
+	{% block body %}
+		{% with messages = get_flashed_messages() %}
+		  {% if messages %}
+		  	{% for message in messages%}
+		    	<p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{message}}</p>
+		    {% endfor %}
+		  {% endif %}
+		{% endwith %}
+
+	    {% if error %}
+	      <p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{error}}</p>
+	    {% endif %}
+	{% endblock %}
+
+	<div class="formHolder">
+	<form action="/login" method="post">
+		<p style="font: 16px/1 'helvetica neue', helvetica, arial, sans-serif;">USERNAME:</p>
+	    <input type="text" placeholder="Username" name="username" value="{{request.form.username }}">
+	    <p style="font: 16px/1 'helvetica neue', helvetica, arial, sans-serif;">PASSWORD:</p>
+	    <input type="password" placeholder="Password" name="password" value="{{request.form.password }}">
+	    <p></p>
+	    <input id="login_btn" class="btn btn-default" type="submit" value="Login">
+    </form>
+    </div>
+
+    <div class="regresHolder">
+		<p  style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;padding-top: 5%;">Don't have an account yet? <a href="/register">Register</a>.</p>
+	</div>
+	<div class="regresHolder">
+		<p  style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;">Forgot your password? <a href="/forgot-password">Reset</a>.</p>
+	</div>
+</body>
+
+<script type="text/javascript">
+	$(document).ready(function () {
+	    $("#home_btn").click(function () {
+	      window.location.href = '/'
+	    });
+	});
+</script>
+
+</html>

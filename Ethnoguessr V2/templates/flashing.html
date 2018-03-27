@@ -1,0 +1,8 @@
+<!doctype html>
+		{% with messages = get_flashed_messages() %}
+		  {% if messages %}
+		  	{% for message in messages%}
+		    	<p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{message}}</p>
+		    {% endfor %}
+		  {% endif %}
+		{% endwith %}

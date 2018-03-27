@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+	<link rel="stylesheet" href="../static/css/challenges.css">
+</head>
+
+<body>
+
+<div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="mode_btn" class="btn btn-default" value="PLAY MODE">
+    </div>
+</div>
+
+<div>
+  <h3 style="padding-left: 15%;padding-top: 1%;  font-family: 'Gill Sans', sans-serif;font-size: 1.4em;">Choose a challenge</h3>
+  <<input style="float: right;margin-right: 5%;margin-top: -5%;" type="button" id="create_btn" class="btn btn-default" value="Create a challenge">
+</div>
+
+<table>
+	{% for challenge in challenges_list %}
+  <tr>
+    <th>
+	   <a href="challenge/{{challenge[0]}}" style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;">{{challenge[0]}}</a>
+    </th>
+    <th>
+      <p style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;">{{challenge[1]}} Rounds</p>
+    </th>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+      $("#home_btn").click(function () {
+        window.location.href = '/'
+      });
+
+      $("#mode_btn").click(function () {
+        window.location.href = '/play_mode'
+      });
+      $("#create_btn").click(function () {
+        window.location.href = '/add_challenge'
+      });
+  });
+
+</script>
+
+</html>
