@@ -24,22 +24,6 @@ app.config.update(
 )
 mail = Mail(app)
 
-#set FLASK_APP=C:\Users\Jan Jezersek\Documents\Python Scripts\Ethnoguessr V2\app.py
-
-###picture (ID,link,coordinates,show_in_continuous)
-###c.execute("CREATE TABLE pictures (ID INTEGER PRIMARY KEY AUTOINCREMENT,LINK TEXT NOT NULL,COORDINATES TEXT NOT NULL,SHOW_IN_CONTINUOUS INTEGER NOT NULL);")
-###users (ID, username, password, email, confirmed)
-#c.execute("CREATE TABLE users (ID INTEGER PRIMARY KEY AUTOINCREMENT,USERNAME TEXT NOT NULL,PASSWORD TEXT NOT NULL,EMAIL TEXT,CONFIRMED INTEGER NOT NULL);")
-###leaderboard (username,n_games,cum_score,avg_score)
-#c.execute("CREATE TABLE leaderboard (USERNAME TEXT NOT NULL,N_GAMES INTEGER NOT NULL,CUM_SCORE INTEGER NOT NULL,AVG_SCORE DOUBLE NOT NULL);")
-###challenges (chnum,rounds)
-#c.execute("CREATE TABLE challenges (CHNUM TEXT NOT NULL,ROUNDS INTEGER NOT NULL);")
-###challenge_state (chnum,username,current_round,finished,current_score)
-#c.execute("CREATE TABLE challenge_states (CHNUM TEXT NOT NULL,USERNAME TEXT NOT NULL,CURRENT_ROUND INTEGER NOT NULL,FINISHED INTEGER NOT NULL,CURRENT_SCORE INTEGER NOT NULL);")
-###challengeCHNUM (round,pictureID)
-###challengeCHNUM_results (username,round,score,guessed,correct)
-###challengeCHNUM_leaderboard (username,cum_score)
-
 @app.before_request
 def make_session_permanent():
     session.permanent = True
@@ -606,7 +590,5 @@ def individual_results_page(chnum):
     return render_template('individual_results.html',data=data)
 
 
-#if __name__ == '__main__':
-#    app.run()
-        
-app.run(debug=True,threaded=True)
+if __name__ == '__main__':
+    app.run()
