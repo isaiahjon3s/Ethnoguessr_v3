@@ -32,26 +32,10 @@ def make_session_permanent():
 def index_page():
     try:
         session['logged_in']
-#        message = request.args['message']
-#        print("This is the fucking message: ",message,type(message))
-#        print(render_template('index.html',message=message))
         return render_template('index.html')
     except:
         session['logged_in'] = False
-#        print("Fugggg")
         return render_template('index.html')
-    
-#    try:
-#        print("Checkpoint 1")
-#        message = request.args['message']
-#        print("Checkpoint 2")
-#    except:
-#        print("Checkpoint 3")
-#        message = "Other message"
-#        
-#    print("Checkpoint 4",message)
-#    print("Checkpoint 5",render_template('index.html',message=message))
-#    return render_template('index.html',message=message)
     
 @app.route('/logout',methods=['POST'])
 def logout():
@@ -356,8 +340,6 @@ def rank():
             
     return jsonify(rank1,cum_score,rank2,avg_score)
 
-#    return jsonify(str(rank1),str(cum_score),str(rank2),str(avg_score))
-
 @app.route('/challenge', methods=['GET'])
 def challenge_page():
     if session['logged_in']:
@@ -450,9 +432,6 @@ def save_challenge_results(chnum):
     result = request.form['score']
     guessed = request.form['guessed']
     correct = request.form['correct']
-    
-    print(guessed,correct)
-    print(result)
 
     dir = os.path.dirname(__file__)
     
@@ -467,17 +446,13 @@ def save_challenge_results(chnum):
             
     c.execute("SELECT current_score FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
     cum_score = c.fetchall()[0][0]
-    print("INB4 VISITING GANDY",cum_score,result)
     cum_score += int(result)
-    
-    print(current_round,no_rounds)
-    
+        
     if current_round + 1 == no_rounds:
         c.execute("UPDATE challenge_states SET finished = 1 WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
         c.execute("INSERT INTO challenge{0}_leaderboard (username,cum_score) VALUES ('{1}',{2})".format(chnum,session['username'],cum_score))
     
     c.execute("UPDATE challenge_states SET current_score = {0} WHERE chnum = '{1}' AND username = '{2}'".format(cum_score,chnum,session['username']))
-    print('INSERT INTO challenge{0}_results (username,round,score,guessed,correct) VALUES ("{1}",{2},{3},"{4}","{5}")'.format(chnum,session['username'],current_round,result,guessed,correct))
     c.execute('INSERT INTO challenge{0}_results (username,round,score,guessed,correct) VALUES ("{1}",{2},{3},"{4}","{5}")'.format(chnum,session['username'],current_round,result,guessed,correct))
     conn.commit()
     conn.close()
@@ -530,13 +505,10 @@ def submit_challenge():
                     
             for i in range(int(n_rounds)):
                 link = request.form['link0']
-                print(link)
                 link = request.form['link{}'.format(i)]
                 xcoordinate = request.form['xcoordinate{}'.format(i)]
                 ycoordinate = request.form['ycoordinate{}'.format(i)]
-                
-                print("b",i)
-                
+                                
                 coordinates = coordinates_f(float(xcoordinate),float(ycoordinate))
     
                 data.append([link,coordinates])
