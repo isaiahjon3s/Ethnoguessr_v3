@@ -1,0 +1,232 @@
+https://i.imgur.com/2Vd6DLi.png
+{"lat": 45.833333,"lng": 20.45}
+https://i.imgur.com/ptbfpef.jpg
+{"lat": 45.916686,"lng": 14.57045}
+https://i.imgur.com/Q2iDomZ.jpg
+{"lat": 44.816667,"lng": 20.466667}
+https://i.imgur.com/rqshNEP.png
+{"lat": 43.366667,"lng": 17.583333}
+https://i.imgur.com/3HjrctT.png
+{"lat": 43.616944,"lng": 13.516667}
+https://i.imgur.com/93w3Z5x.png
+{"lat": 46.766667,"lng": 23.583333}
+https://i.imgur.com/u3mn4QH.png
+{"lat": 45.9626,"lng": 12.6563}
+https://i.imgur.com/jHzUf7S.png
+{"lat": 45.9626,"lng": 12.6563}
+https://i.imgur.com/JktcHWM.jpg
+{"lat": 44.411111,"lng": 8.932778}
+https://i.imgur.com/eNjrbnw.jpg
+{"lat": 44.411111,"lng": 8.932778}
+https://i.imgur.com/sdkC96h.png
+{"lat": 44.411111,"lng": 8.932778}
+https://i.imgur.com/qTLbXvT.png
+{"lat": 47.156944,"lng": 27.590278}
+https://i.imgur.com/hJ7Z9Dh.jpg
+{"lat": 47.156944,"lng": 27.590278}
+https://i.imgur.com/CSlIsoE.png
+{"lat": 47.156944,"lng": 27.590278}
+https://i.imgur.com/wqYlZod.png
+{"lat": 37.866667,"lng": 32.483333}
+https://i.imgur.com/LaTRE49.png
+{"lat": 37.866667,"lng": 32.483333}
+https://i.imgur.com/8vFno7H.png
+{"lat": 30.2734188,"lng": 79.6061803}
+https://i.imgur.com/8tWLNJk.png
+{"lat": 30.2734188,"lng": 79.6061803}
+https://i.imgur.com/9YTwDGx.png
+{"lat": -20.164386,"lng": 57.504104}
+https://i.imgur.com/D5x7TUm.png
+{"lat": -20.164386,"lng": 57.504104}
+https://i.imgur.com/hz7ocln.png
+{"lat": -20.164386,"lng": 57.504104}
+https://i.imgur.com/MTAFDHw.png
+{"lat": -20.164386,"lng": 57.504104}
+https://i.imgur.com/ojgFErn.png
+{"lat": 43.483333,"lng": 43.616667}
+https://i.imgur.com/NE9AY51.png
+{"lat": 43.483333,"lng": 43.616667}
+https://i.imgur.com/37VJjZn.png
+{"lat": 43.483333,"lng": 43.616667}
+https://i.imgur.com/I9cez7k.png
+{"lat": 55.796389,"lng": 49.108889}
+https://i.imgur.com/hY4HfCb.png
+{"lat": 55.796389,"lng": 49.108889}
+https://i.imgur.com/LhQWAgL.png
+{"lat": 55.796389,"lng": 49.108889}
+https://i.imgur.com/ysZjYy2.png
+{"lat": -12.043333,"lng": -77.028333}
+https://i.imgur.com/DsyTSUU.jpg
+{"lat": -12.043333,"lng": -77.028333}
+https://i.imgur.com/wOCY0uB.png
+{"lat": -12.043333,"lng": -77.028333}
+https://i.imgur.com/qocR0Et.png
+{"lat": -12.043333,"lng": -77.028333}
+https://i.imgur.com/8yUM1oa.png
+{"lat": 32.066667,"lng": 34.783333}
+https://i.imgur.com/GG0lEme.png
+{"lat": 31.783333,"lng": 35.216667}
+https://i.imgur.com/8MXaYcf.png
+{"lat": 32.502778,"lng": 34.905556}
+https://i.imgur.com/2q7Pcc8.png
+{"lat": 31.2,"lng": 29.916667}
+https://i.imgur.com/CY5PeJH.png
+{"lat": 31.2,"lng": 29.916667}
+https://i.imgur.com/Jnh1ws3.png
+{"lat": 31.2,"lng": 29.916667}
+https://i.imgur.com/nUNyH2i.png
+{"lat": 31.2,"lng": 29.916667}
+https://i.imgur.com/CQmoScD.png
+{"lat": 38.25,"lng": 101.969722}
+https://i.imgur.com/9oZdwGp.png
+{"lat": 38.25,"lng": 101.969722}
+https://i.imgur.com/RYDD4HE.png
+{"lat": 48.483333,"lng": 135.083333}
+https://i.imgur.com/j67teZr.png
+{"lat": 56.833333,"lng": 60.583333}
+https://i.imgur.com/Trcz1Po.png
+{"lat": 36.183333,"lng": 5.4}
+https://i.imgur.com/OMfQKdQ.png
+{"lat": 36.183333,"lng": 5.4}
+https://i.imgur.com/65ilY0E.png
+{"lat": 37,"lng": 35.321333}
+https://i.imgur.com/Sd4MgRg.png
+{"lat": 37,"lng": 35.321333}
+https://i.imgur.com/AhTI3Rj.png
+{"lat": 43.103024,"lng": -8.913647}
+https://i.imgur.com/djGmjgj.png
+{"lat": 43.103024,"lng": -8.913647}
+https://i.imgur.com/K6Ly0V5.png
+{"lat": 43.103024,"lng": -8.913647}
+https://i.imgur.com/alhfcoP.png
+{"lat": 43.103024,"lng": -8.913647}
+https://i.imgur.com/6j6f4hx.png
+{"lat": 43.103024,"lng": -8.913647}
+https://i.imgur.com/1s9LTYa.png
+{"lat": 37.377222,"lng": -5.986944}
+https://i.imgur.com/GK90iv0.png
+{"lat": 37.377222,"lng": -5.986944}
+https://i.imgur.com/9WHmyvG.png
+{"lat": 37.377222,"lng": -5.986944}
+https://i.imgur.com/Q13jJEU.png
+{"lat": 37.377222,"lng": -5.986944}
+http://i.imgur.com/WdMGS9C.png
+{"lat": 58.383333,"lng": 24.5}
+http://i.imgur.com/BeXQyon.png
+{"lat": 58.383333,"lng": 24.5}
+http://i.imgur.com/C7iIRWZ.png
+{"lat": 58.383333,"lng": 24.5}
+http://i.imgur.com/Jy42bFQ.png
+{"lat": 58.383333,"lng": 24.5}
+http://i.imgur.com/QK5W7hr.png
+{"lat": 58.383333,"lng": 24.5}
+https://i.imgur.com/6L1Wjdj.png
+{"lat": -11.699,"lng": 43.256}
+https://i.imgur.com/9aWeJqv.png
+{"lat": -18.933333,"lng": 47.516667}
+https://i.imgur.com/Mt6oqhQ.png
+{"lat": 50.004444,"lng": 36.231389}
+https://i.imgur.com/FPpUgt9.png
+{"lat": 51.033333,"lng": 13.733333}
+https://i.imgur.com/Zsui737.png
+{"lat": 51.033333,"lng": 13.733333}
+https://i.imgur.com/NEBwaEF.png
+{"lat": 51.033333,"lng": 13.733333}
+https://i.imgur.com/7NnALuM.png
+{"lat": 51.033333,"lng": 13.733333}
+https://i.imgur.com/km0mPuw.png
+{"lat": 51.033333,"lng": 13.733333}
+https://i.imgur.com/WcOSQmd.png
+{"lat": 50.359722,"lng": 7.597778}
+https://i.imgur.com/Vx7X9gK.png
+{"lat": 50.359722,"lng": 7.597778}
+https://i.imgur.com/6Ql2R2L.png
+{"lat": 50.359722,"lng": 7.597778}
+https://i.imgur.com/DA0HVVR.png
+{"lat": 50.359722,"lng": 7.597778}
+https://i.imgur.com/fOTVRrs.png
+{"lat": 50.359722,"lng": 7.597778}
+https://i.imgur.com/v5C2LJh.png
+{"lat": 53.861111,"lng": 8.694444}
+https://i.imgur.com/QdmXE3l.png
+{"lat": 53.861111,"lng": 8.694444}
+https://i.imgur.com/tolBXEo.png
+{"lat": 53.861111,"lng": 8.694444}
+https://i.imgur.com/eY7XwTb.png
+{"lat": 53.861111,"lng": 8.694444}
+https://i.imgur.com/NXuM55a.png
+{"lat": 53.861111,"lng": 8.694444}
+https://i.imgur.com/t5cWva5.png
+{"lat": 46.616667,"lng": 14.3}
+https://i.imgur.com/4yUBWA4.png
+{"lat": 46.616667,"lng": 14.3}
+https://i.imgur.com/i3THSOK.png
+{"lat": 46.616667,"lng": 14.3}
+https://i.imgur.com/RYqGxTr.png
+{"lat": 46.616667,"lng": 14.3}
+https://i.imgur.com/nFeWOb2.png
+{"lat": 24.088889,"lng": 32.899722}
+https://i.imgur.com/ATiAJ3R.png
+{"lat": 24.088889,"lng": 32.899722}
+https://i.imgur.com/dBn7ZI7.png
+{"lat": 24.088889,"lng": 32.899722}
+https://i.imgur.com/uPXRN1R.png
+{"lat": 24.088889,"lng": 32.899722}
+https://i.imgur.com/A9p3YEl.png
+{"lat": 43.316667,"lng": 45.716667}
+https://i.imgur.com/caqIBbV.png
+{"lat": 43.316667,"lng": 45.716667}
+https://i.imgur.com/4giOmeo.png
+{"lat": 43.316667,"lng": 45.716667}
+https://i.imgur.com/n89T4a9.png
+{"lat": 42.966667,"lng": 47.483333}
+https://i.imgur.com/uV6PKzu.png
+{"lat": 42.966667,"lng": 47.483333}
+https://i.imgur.com/scRAunB.png
+{"lat": 55.933333,"lng": 23.316667}
+https://i.imgur.com/Vc8ucHf.png
+{"lat": 55.933333,"lng": 23.316667}
+https://i.imgur.com/rdn8cxg.png
+{"lat": 55.933333,"lng": 23.316667}
+https://i.imgur.com/mRDRMSM.png
+{"lat": 55.933333,"lng": 23.316667}
+https://i.imgur.com/garRWNU.png
+{"lat": 55.933333,"lng": 23.316667}
+https://i.imgur.com/YS7lPtg.png
+{"lat": 50.616667,"lng": 26.25}
+https://i.imgur.com/vhdNkbC.png
+{"lat": 50.616667,"lng": 26.25}
+https://i.imgur.com/NugjArH.png
+{"lat": 50.616667,"lng": 26.25}
+https://i.imgur.com/zO9mJ2t.png
+{"lat": 50.616667,"lng": 26.25}
+https://i.imgur.com/kjGQkVh.png
+{"lat": 50.616667,"lng": 26.25}
+https://i.imgur.com/o3eCMan.png
+{"lat": 55.191667,"lng": 30.205556}
+https://i.imgur.com/9WfVCat.png
+{"lat": 55.191667,"lng": 30.205556}
+https://i.imgur.com/Wa4JM6L.png
+{"lat": 55.191667,"lng": 30.205556}
+https://i.imgur.com/MJC8Ffk.png
+{"lat": 55.191667,"lng": 30.205556}
+https://i.imgur.com/mAlW8Xs.png
+{"lat": 55.191667,"lng": 30.205556}
+https://i.imgur.com/kiiWbTs.jpg
+{"lat": 52.05,"lng": 113.466667}
+https://i.imgur.com/HCepRp2.png
+{"lat": 59.858056,"lng": 17.644722}
+https://i.imgur.com/gGBQ1Yj.png
+{"lat": 22.566667,"lng": 88.366667}
+https://i.imgur.com/gYYmYXc.png
+{"lat": 6.455027,"lng": 3.384082}
+https://i.imgur.com/QDSBgZB.png
+{"lat": 61.5,"lng": 23.766667}
+https://i.imgur.com/etM5oem.png
+{"lat": 21.028472,"lng": 105.854167}
+https://i.imgur.com/DAYP0yn.png
+{"lat": 31.783333,"lng": 35.216667}
+https://i.imgur.com/7bBt32i.png
+{"lat": 29.55,"lng": 34.95}
+https://i.imgur.com/GXTM6Et.png
+{"lat": 29.55,"lng": 34.95}

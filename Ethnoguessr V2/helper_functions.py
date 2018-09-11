@@ -9,6 +9,9 @@ import sqlite3
 from wtforms import Form, TextField, PasswordField, validators
 import ast
 
+import os
+path = os.getcwd()
+
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=20)])
     email = TextField('Email Address', [validators.Length(min=6, max=50)])
@@ -18,9 +21,9 @@ class RegistrationForm(Form):
     ])
     confirm = PasswordField('Repeat Password')
     
-def populate_pictures():
+def populate_pictures(path):
 #    dir = os.path.dirname(__file__)
-    dir = 'C:/Users/Jan Jezersek/Documents/Python Scripts/Ethnoguessr V2'
+    dir = path
     
     with open(os.path.join(dir, 'pictures.txt'),'r') as f:
         pics = f.readlines()
@@ -42,8 +45,8 @@ def populate_pictures():
     conn.close()
         
     
-def create_challenge(chnum,filename,show_in_continuous=0):
-    dir = 'C:/Users/Jan Jezersek/Documents/Python Scripts/Ethnoguessr V2'
+def create_challenge(chnum,filename,path,show_in_continuous=0):
+    dir = path
     
     with open(os.path.join(dir, filename),'r') as f:
         chdata = f.readlines()
@@ -93,6 +96,21 @@ def challenge_validator(data):
         return 0,i
     except:
         return 3,i
+    
+def create_tables(path):
+    dir = path
+            
+    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    c = conn.cursor()
+    
+    c.execute("CREATE TABLE pictures (ID INTEGER PRIMARY KEY AUTOINCREMENT,LINK TEXT NOT NULL,COORDINATES TEXT NOT NULL,SHOW_IN_CONTINUOUS INTEGER NOT NULL);")
+    c.execute("CREATE TABLE users (ID INTEGER PRIMARY KEY AUTOINCREMENT,USERNAME TEXT NOT NULL,PASSWORD TEXT NOT NULL,EMAIL TEXT,CONFIRMED INTEGER NOT NULL);")
+    c.execute("CREATE TABLE leaderboard (USERNAME TEXT NOT NULL,N_GAMES INTEGER NOT NULL,CUM_SCORE INTEGER NOT NULL,AVG_SCORE DOUBLE NOT NULL);")
+    c.execute("CREATE TABLE challenges (CHNUM TEXT NOT NULL,ROUNDS INTEGER NOT NULL);")
+    c.execute("CREATE TABLE challenge_states (CHNUM TEXT NOT NULL,USERNAME TEXT NOT NULL,CURRENT_ROUND INTEGER NOT NULL,FINISHED INTEGER NOT NULL,CURRENT_SCORE INTEGER NOT NULL);")
+    
+    conn.commit()
+    conn.close()
             
     
 
