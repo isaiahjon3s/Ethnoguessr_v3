@@ -5,7 +5,7 @@
 	<script src="https://code.jquery.com/jquery-1.10.1.js"></script>
 	<link rel="stylesheet" href="../static/css/play.css">
 	<link rel="stylesheet" href="../static/css/ethnoguessr.css">
-	<meta property="coords" coord="{{photo_coord}}">
+	<meta property="picture_id" picture_id="{{picture_id}}">
 </head>
 
 <body>
@@ -39,7 +39,7 @@ var markers = [];
 var lat = -1;
 var lng = -1;
 var score;
-var coordinates = JSON.parse(document.querySelector("meta[property='coords']").getAttribute("coord"));
+var picture_id = JSON.parse(document.querySelector("meta[property='picture_id']").getAttribute("picture_id"));
 var link;
 
 function next(){
@@ -111,6 +111,50 @@ function deleteMarker(){
 }
 
 function results(){
+	console.log(picture_id);
+	$.post(window.location.href + '/save_challenge_results', {"lat": lat,"lng": lng, "picture_id": picture_id}, function(response) {
+		console.log(response);
+		latLngB = new google.maps.LatLng(response[1], response[2]);
+		score = response[0];
+		dist = response[3];
+
+		if (score == -1) {
+			$("body").append("<div id='results_page'><p id='score_n'>You failed to place a marker. You earned 0 points.</p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
+			map2 = new google.maps.Map(document.getElementById('results'),{
+				zoom: 1,
+				center: latLngB,
+				map: map,
+				gestureHandling: 'greedy'
+			});
+			var marker = new google.maps.Marker({
+			position: latLngB,
+			map: map
+			});
+			marker.setMap(map2)
+		}
+		else {
+			latLngA = new google.maps.LatLng(lat, lng);
+			$.get('/rank', function(data,status){
+				rank1 = data[0];
+				cum_score = data[1];
+				rank2 = data[2];
+				avg_score = Math.round((data[3]*10)) / 10;
+
+				$("body").append("<div id='results_page'><p id='score_n'>Your guess was " + dist + " km from the correct location. You earned " + score + " points out of 1000.</p><button id='nxt_btn' onclick='next()'>Next picture</button><div id='results'></div></div>");
+				map2 = new google.maps.Map(document.getElementById('results'),{
+					zoom: 1,
+					center: latLngB,
+					map: map,
+					gestureHandling: 'greedy'
+				});
+				resultsMarkers(latLngA,latLngB)
+			});
+		}
+
+	});
+}
+
+/*function results(){
 	if (lat == -1 && lng == -1){
 		latLngB = new google.maps.LatLng(coordinates['lat'], coordinates['lng']);
 		score = 0;
@@ -149,7 +193,7 @@ function results(){
 		});
 		resultsMarkers(latLngA,latLngB)
 	}
-}
+}*/
 
 function calcScore(dist){
 	var maxScore = 1000;

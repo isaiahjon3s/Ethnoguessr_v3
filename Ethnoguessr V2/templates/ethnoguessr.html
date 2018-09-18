@@ -39,6 +39,7 @@ var lng = -1;
 var score;
 var coordinates;
 var link;
+var picture_id;
 
 function reload(){
 	window.location.reload();
@@ -107,73 +108,52 @@ function deleteMarker(){
 }
 
 function results(){
-	if (lat == -1 && lng == -1){
-		latLngB = new google.maps.LatLng(coordinates['lat'], coordinates['lng']);
-		score = 0;
-		score = String(score);
-		$.post('/save_results', {"score": score});
-		$("body").append("<div id='results_page'><p id='score_n'>You failed to place a marker. You earned " + score + " points.</p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
-		map2 = new google.maps.Map(document.getElementById('results'),{
-			zoom: 1,
-			center: latLngB,
-			map: map,
-			gestureHandling: 'greedy'
-		});
-		var marker = new google.maps.Marker({
-		position: latLngB,
-		map: map
-		});
-		marker.setMap(map2)
-	}
-	else {
-		latLngA = new google.maps.LatLng(lat, lng);
-		latLngB = new google.maps.LatLng(coordinates['lat'], coordinates['lng']);
-		dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
-		score = calcScore(dist);
-		score = String(score);
-		dist = Math.round((dist/100)) / 10;
-		var rank1;
-		var cum_score;
-		var rank2;
-		var avg_score;
-		$.post('/save_results', {"score": score});
-		$.get('/rank', function(data,status){
-			rank1 = data[0];
-			cum_score = data[1];
-			rank2 = data[2];
-			avg_score = Math.round((data[3]*10)) / 10;
+	$.post('/save_results', {"lat": lat,"lng": lng, "picture_id": picture_id}, function(response) {
+		console.log(response);
+		latLngB = new google.maps.LatLng(response[1], response[2]);
+		score = response[0];
+		dist = response[3];
 
-		$("body").append("<div id='results_page'><p id='score_n'>Your guess was " + dist + " km from the correct location. You earned " + score + " points out of 1000. Your cumulative score: " + cum_score + " (" + rank1 + ". place). Your average score: " + avg_score + " (" + rank2 + ". place) </p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
-		map2 = new google.maps.Map(document.getElementById('results'),{
-			zoom: 1,
-			center: latLngB,
-			map: map,
-			gestureHandling: 'greedy'
-		});
-		resultsMarkers(latLngA,latLngB)
-		});
-	}
-	//});
-}
+		if (score == -1) {
+			$("body").append("<div id='results_page'><p id='score_n'>You failed to place a marker. You earned 0 points.</p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
+			map2 = new google.maps.Map(document.getElementById('results'),{
+				zoom: 1,
+				center: latLngB,
+				map: map,
+				gestureHandling: 'greedy'
+			});
+			var marker = new google.maps.Marker({
+			position: latLngB,
+			map: map
+			});
+			marker.setMap(map2)
+		}
+		else {
+			latLngA = new google.maps.LatLng(lat, lng);
+			$.get('/rank', function(data,status){
+				rank1 = data[0];
+				cum_score = data[1];
+				rank2 = data[2];
+				avg_score = Math.round((data[3]*10)) / 10;
 
-function calcScore(dist){
-	var maxScore = 1000;
-	var a = 1650.7903650648132;
-	var b = 0.995;
-	if (dist <= 100000){
-		score = maxScore;
-	}
-	else {
-		score = a*Math.pow(b,dist/1000.0);
-		score = Math.round(score);
-	}
-	return score;
+				$("body").append("<div id='results_page'><p id='score_n'>Your guess was " + dist + " km from the correct location. You earned " + score + " points out of 1000. Your cumulative score: " + cum_score + " (" + rank1 + ". place). Your average score: " + avg_score + " (" + rank2 + ". place) </p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
+				map2 = new google.maps.Map(document.getElementById('results'),{
+					zoom: 1,
+					center: latLngB,
+					map: map,
+					gestureHandling: 'greedy'
+				});
+				resultsMarkers(latLngA,latLngB)
+			});
+		}
+
+	});
 }
 
 $(document).ready(function () {
 	$.get('/choose_image', function(data,status,link){
 		link = data[0];
-		coordinates = JSON.parse(data[1]);
+		picture_id = data[1];
 		$("#picture").append("<img style='display: block;max-width:100%;max-height:100%;width: auto;height: auto;' src='" + link + "'>");
 	});
 });

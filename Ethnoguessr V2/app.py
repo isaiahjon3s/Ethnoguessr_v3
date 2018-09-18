@@ -3,7 +3,7 @@ from flask_mail import Mail, Message
 import requests
 import json
 from wtforms import Form, BooleanField, TextField, PasswordField, validators
-from helper_functions import RegistrationForm, coordinates_f
+from helper_functions import RegistrationForm, coordinates_f, calculate_score
 import random
 import numpy as np
 import os
@@ -253,17 +253,24 @@ def choose_image():
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         c = conn.cursor()
         
-        c.execute("SELECT link,coordinates FROM pictures WHERE show_in_continuous = 1 ORDER BY RANDOM() LIMIT 1")
-        
-        url,coordinates = c.fetchall()[0]
+        c.execute("SELECT link,id FROM pictures WHERE show_in_continuous = 1 ORDER BY RANDOM() LIMIT 1")
+
+        url,pic_id = c.fetchall()[0]
         
         conn.close()
         
-        return jsonify(url,coordinates)
+        return jsonify(url,pic_id)
 
 @app.route('/save_results',methods = ['POST'])
 def save_results():
-    result = request.form['score']
+    try:
+        lat = request.form['lat']
+        lng = request.form['lng']
+        picture_id = request.form['picture_id']
+    except Exception as e:
+        print(e)
+        
+    result,correct_lat,correct_lng,dist = calculate_score(lat,lng,picture_id)
     
     conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -284,7 +291,7 @@ def save_results():
         
     conn.commit()
     conn.close()    
-    return jsonify("success")
+    return jsonify(result,correct_lat,correct_lng,dist)
 
 @app.route('/leaderboard',methods = ['GET'])
 def leaderboard_page():
@@ -379,16 +386,14 @@ def challenge(chnum):
                 c.execute("SELECT user_challenge.finished_rounds FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
                 data = c.fetchall()
                 if len(data) == 0:
-#                    c.execute("INSERT INTO challenge_states (chnum,username,current_round,finished,current_score) VALUES (%s, %s, %s, %, %s)", [chnum,session['username'],0,0,0])
-#                    c.execute("SELECT pictures.link,pictures.coordinates FROM challenge%s INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = %s", [chnum,0])
                     c.execute("SELECT id FROM users WHERE username = %s",[session['username']])
                     user_id = c.fetchall()[0][0]
                     c.execute("INSERT INTO user_challenge (finished_rounds,score,userid,challengeid) VALUES (%s, %s, %s, %s)",[0,0,user_id,chnum])
-                    c.execute("SELECT pictures.link,pictures.coordinates FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = 1",[chnum])
-                    link,coordinates = (c.fetchall())[0]
+                    c.execute("SELECT pictures.link,pictures.id FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = 1",[chnum])
+                    link,picture_id = (c.fetchall())[0]
                     conn.commit()
                     conn.close()
-                    return render_template('challenge.html',photo_url=link,photo_coord=coordinates)
+                    return render_template('challenge.html',photo_url=link,picture_id=picture_id)
                 else:
                     current_round = data[0][0] + 1
                     c.execute("SELECT * FROM picture_challenge WHERE challengeid = %s",[chnum])
@@ -397,10 +402,10 @@ def challenge(chnum):
                     if total_rounds + 1 == current_round:
                         return redirect(url_for('challenge_finished',chnum=chnum))
                     else:
-                        c.execute("SELECT pictures.link,pictures.coordinates FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = %s",[chnum,current_round])
-                        link,coordinates = (c.fetchall())[0]
+                        c.execute("SELECT pictures.link,pictures.id FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = %s",[chnum,current_round])
+                        link,picture_id = (c.fetchall())[0]
                         conn.close()
-                        return render_template('challenge.html',photo_url=link,photo_coord=coordinates)
+                        return render_template('challenge.html',photo_url=link,picture_id=picture_id)
                 
             except Exception as e:
                 print(e)
@@ -430,29 +435,33 @@ def next_challenge_photo(chnum):
 
 @app.route('/challenge/<chnum>/save_challenge_results', methods=['POST'])
 def save_challenge_results(chnum):
-    result = request.form['score']
-    guessed = request.form['guessed']
-    correct = request.form['correct']
-    
-    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
-    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    c = conn.cursor()
-    
-    c.execute("SELECT user_challenge.finished_rounds,user_challenge.score FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
-    data = c.fetchall()
-    current_round = data[0][0]
-    cum_score = data[0][1]
-    
-    cum_score += int(result)
+    try:
+        lat = request.form['lat']
+        lng = request.form['lng']
+        picture_id = request.form['picture_id']
+                
+        result,correct_lat,correct_lng,dist = calculate_score(lat,lng,picture_id)
         
-
-    c.execute("SELECT id FROM users WHERE username = %s",[session['username']])
-    user_id = c.fetchall()[0][0]
-    c.execute("UPDATE user_challenge SET score = %s, finished_rounds = %s WHERE challengeid = %s AND userid = %s", [cum_score,current_round + 1,chnum,user_id])
-    conn.commit()
-    conn.close()
-
-    return jsonify('OK')
+        conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        c = conn.cursor()
+        
+        c.execute("SELECT user_challenge.finished_rounds,user_challenge.score FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
+        data = c.fetchall()
+        current_round = data[0][0]
+        cum_score = data[0][1]
+        
+        cum_score += int(result)
+    
+        c.execute("SELECT id FROM users WHERE username = %s",[session['username']])
+        user_id = c.fetchall()[0][0]
+        c.execute("UPDATE user_challenge SET score = %s, finished_rounds = %s WHERE challengeid = %s AND userid = %s", [cum_score,current_round + 1,chnum,user_id])
+        conn.commit()
+        conn.close()
+    
+        return jsonify(result,correct_lat,correct_lng,dist)
+    except Exception as e:
+        print(e)
 
 @app.route('/challenge/<chnum>/results', methods=['POST','GET'])
 def challenge_finished(chnum):

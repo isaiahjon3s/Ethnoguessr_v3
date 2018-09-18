@@ -5,12 +5,14 @@ Created on Tue Jan 16 10:44:57 2018
 @author: Jan Jezersek
 """
 import os
-#import sqlite3
+import math
 from wtforms import Form, TextField, PasswordField, validators
 import ast
 import psycopg2
 import os
 import auth
+import geopy.distance
+import json
 
 path = os.getcwd()
 
@@ -22,6 +24,40 @@ class RegistrationForm(Form):
     validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')
+    
+def calculate_score(lat,lng,picture_id):
+    print("CALCULATING SCORE")
+    max_score = 1000
+    a = 1105.2262215
+    b = 0.999
+    
+    print(picture_id)
+    picture_id = str(picture_id)
+    
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    c = conn.cursor()
+    
+    print("CS CHECKPOINT 0")
+    
+    c.execute("SELECT coordinates FROM pictures WHERE id = %s",[picture_id])
+    coordinates = json.loads(c.fetchall()[0][0])
+    conn.commit()
+    conn.close()
+    
+    print("CS CHECKPOINT 1")
+    
+    distance = geopy.distance.distance((lat,lng),(coordinates["lat"],coordinates["lng"]))
+    
+    if distance.m < 100000:
+        score = max_score
+    else:
+        score = round(a * math.pow(b,distance.km)) 
+        
+    print(score)
+    
+    
+    return score,coordinates["lat"],coordinates["lng"],round(distance.km,2)
     
 def populate_pictures(path):
 #    dir = os.path.dirname(__file__)
@@ -104,24 +140,17 @@ def create_test_challenge():
 def create_tables(path):
     dir = path
             
-    #conn = psycopg2.connect(os.path.join(dir, 'database.db'))
     conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-#    c.execute("CREATE TABLE pictures (ID INTEGER PRIMARY KEY AUTOINCREMENT,LINK TEXT NOT NULL,COORDINATES TEXT NOT NULL,SHOW_IN_CONTINUOUS INTEGER NOT NULL);")
-#    c.execute("CREATE TABLE users (ID INTEGER PRIMARY KEY AUTOINCREMENT,USERNAME TEXT NOT NULL,PASSWORD TEXT NOT NULL,EMAIL TEXT,CONFIRMED INTEGER NOT NULL);")
-#    c.execute("CREATE TABLE leaderboard (USERNAME TEXT NOT NULL,N_GAMES INTEGER NOT NULL,CUM_SCORE INTEGER NOT NULL,AVG_SCORE DOUBLE NOT NULL);")
-#    c.execute("CREATE TABLE challenges (CHNUM TEXT NOT NULL,ROUNDS INTEGER NOT NULL);")
-#    c.execute("CREATE TABLE challenge_states (CHNUM TEXT NOT NULL,USERNAME TEXT NOT NULL,CURRENT_ROUND INTEGER NOT NULL,FINISHED INTEGER NOT NULL,CURRENT_SCORE INTEGER NOT NULL);")
-    
-#    c.execute("CREATE TABLE pictures (ID SERIAL PRIMARY KEY,LINK TEXT NOT NULL,COORDINATES TEXT NOT NULL,SHOW_IN_CONTINUOUS INTEGER NOT NULL);")
-#    c.execute("CREATE TABLE users (ID SERIAL PRIMARY KEY,USERNAME TEXT NOT NULL,PASSWORD TEXT NOT NULL,EMAIL TEXT,CONFIRMED INTEGER NOT NULL,NGAMES INTEGER NOT NULL,CUM_SCORE INTEGER NOT NULL);")
-#    c.execute("CREATE TABLE challenges (ID SERIAL PRIMARY KEY,CHNUM TEXT NOT NULL);")
+    c.execute("CREATE TABLE pictures (ID SERIAL PRIMARY KEY,LINK TEXT NOT NULL,COORDINATES TEXT NOT NULL,SHOW_IN_CONTINUOUS INTEGER NOT NULL);")
+    c.execute("CREATE TABLE users (ID SERIAL PRIMARY KEY,USERNAME TEXT NOT NULL,PASSWORD TEXT NOT NULL,EMAIL TEXT,CONFIRMED INTEGER NOT NULL,NGAMES INTEGER NOT NULL,CUM_SCORE INTEGER NOT NULL);")
+    c.execute("CREATE TABLE challenges (ID SERIAL PRIMARY KEY,CHNUM TEXT NOT NULL);")
     
     #Relacije
-    c.execute("CREATE TABLE picture_challenge (ID SERIAL PRIMARY KEY,ROUND INTEGER NOT NULL,PICTUREID INTEGER REFERENCES pictures(id),CHALLENGEID INTEGER REFERENCES challenges(id));")
-    c.execute("CREATE TABLE user_challenge (ID SERIAL PRIMARY KEY,FINISHED_ROUNDS INTEGER NOT NULL,SCORE INTEGER NOT NULL, USERID INTEGER REFERENCES users(id), CHALLENGEID INTEGER REFERENCES challenges(id));")
+    c.execute("CREATE TABLE picture_challenge (ID SERIAL PRIMARY KEY,ROUND INTEGER NOT NULL,PICTUREID INTEGER REFERENCES pictures(id) UNIQUE,CHALLENGEID INTEGER REFERENCES challenges(id) UNIQUE);")
+    c.execute("CREATE TABLE user_challenge (ID SERIAL PRIMARY KEY,FINISHED_ROUNDS INTEGER NOT NULL,SCORE INTEGER NOT NULL, USERID INTEGER REFERENCES users(id) UNIQUE, CHALLENGEID INTEGER REFERENCES challenges(id) UNIQUE);")
     
     
     conn.commit()
