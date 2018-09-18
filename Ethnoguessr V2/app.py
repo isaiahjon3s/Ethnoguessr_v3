@@ -3,15 +3,18 @@ from flask_mail import Mail, Message
 import requests
 import json
 from wtforms import Form, BooleanField, TextField, PasswordField, validators
-from helper_functions import RegistrationForm, coordinates_f, create_challenge, challenge_validator
+from helper_functions import RegistrationForm, coordinates_f
 import random
 import numpy as np
 import os
-import sqlite3
+#import sqlite3
 import gc
 import re
 from itsdangerous import URLSafeTimedSerializer
 from passlib.hash import sha256_crypt
+import psycopg2
+import auth
+import copy
 
 app = Flask(__name__)
 app.secret_key = '314159265358979323846'
@@ -19,10 +22,14 @@ app.config.update(
     MAIL_SERVER = 'smtp.gmail.com',
     MAIL_PORT = 465,
     MAIL_USE_SSL = True,
-    MAIL_USERNAME = 'example@gmail.com',
-    MAIL_PASSWORD = 'password'
+#    MAIL_USERNAME = 'example@gmail.com',
+#    MAIL_PASSWORD = 'password'
+    MAIL_USERNAME = 'ayntkofficial@gmail.com',
+    MAIL_PASSWORD = 'peterprevc'
 )
 mail = Mail(app)
+
+#set FLASK_APP=C:\Users\Jan Jezersek\Documents\FMF\Projekt podatkovne baze\Ethnoguessr-V2\Ethnoguessr V2\app.py
 
 @app.before_request
 def make_session_permanent():
@@ -49,10 +56,11 @@ def login_page():
         if request.method == 'POST':
             dir = os.path.dirname(__file__)
             
-            conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+            conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             c = conn.cursor()
     
-            c.execute("SELECT * FROM users WHERE username = '{}'".format(request.form['username']))
+            c.execute("SELECT * FROM users WHERE username = %s", [request.form['username']])
             
             data = c.fetchall()
             
@@ -70,12 +78,13 @@ def login_page():
                 session['username'] = request.form['username']
                 return redirect(url_for('play_mode_page'))
             else:
-                print('Wrong password. Please try again.')
-                error = "Wrong username or password. Please try again."
+                print('Wrong password. Please try again. Make sure your account is activated.')
+                error = "Wrong username or password. Please try again. Make sure your account is activated."
                 return render_template('login.html',error=error)
         else:
             return render_template('login.html')
-    except:
+    except Exception as e:
+        print(e)
         error = "Wrong username or password. Please try again."
         return render_template('login.html',error=error)
 
@@ -92,19 +101,23 @@ def register_page():
             email = form.email.data
             password = sha256_crypt.hash((str(form.password.data)))
             
-            conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+            conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             c = conn.cursor()
+            
+            c.execute("SELECT * FROM users WHERE username = %s", [username])
+            x = c.fetchall()
+            c.execute("SELECT * FROM users WHERE email = %s", [email])
+            y = c.fetchall()
+            
 
-            x = c.execute("SELECT * FROM users WHERE username = '{0}'".format(username))
-            y = c.execute("SELECT * FROM users WHERE email = '{0}'".format(email))
-
-            if int(len(x.fetchall())) == 1 or int(len(y.fetchall())) == 1:
+            if int(len(x)) == 1 or int(len(y)) == 1:
                 flash("That username or email is already taken, please choose another")
                 return render_template('register.html', form=form)
 
             else:
-                c.execute("INSERT INTO users (username, password, email, confirmed) VALUES ('{0}', '{1}', '{2}', {3})"
-                          .format(username, password, email, 0))
+                c.execute("INSERT INTO users (username, password, email, confirmed, ngames, cum_score) VALUES (%s, %s, %s, %s, %s, %s)",
+                          [username, password, email, 0, 0, 0])
                 
                 conn.commit()
                 
@@ -129,7 +142,8 @@ def register_page():
 
         return render_template("register.html", form=form)
 
-    except:
+    except Exception as e:
+        print(e)
         flash("Something went wrong. Please, try again. Make sure you enter a valid email address")
         return redirect(url_for('register_page'))
         
@@ -141,11 +155,12 @@ def confirmation(token):
     
     dir = os.path.dirname(__file__)
     
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
     try:
-        c.execute("UPDATE users SET confirmed = 1 WHERE email = '{}'".format(email))
+        c.execute("UPDATE users SET confirmed = 1 WHERE email = %s", [email])
         print("Confirmed successfully!")
         conn.commit()
         conn.close()
@@ -162,10 +177,11 @@ def forgot_password_page():
         entered_email = request.form['email']           
         dir = os.path.dirname(__file__)
         
-        conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+        conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         c = conn.cursor()
         
-        x = c.execute("SELECT * FROM users WHERE email = '{0}'".format(entered_email))
+        x = c.execute("SELECT * FROM users WHERE email = %s", [entered_email])
         
         if len(x.fetchall()) == 1:
             ts = URLSafeTimedSerializer(app.secret_key)
@@ -192,10 +208,11 @@ def reset(token):
 
     dir = os.path.dirname(__file__)
     
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
 
-    x = c.execute("SELECT * FROM users WHERE email = '{0}'".format(email))
+    x = c.execute("SELECT * FROM users WHERE email = %s", [email])
     
     if len(x.fetchall()) == 1:
         conn.commit()
@@ -215,10 +232,11 @@ def reset_page():
             
             dir = os.path.dirname(__file__)
         
-            conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+            conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             c = conn.cursor()
             
-            c.execute("UPDATE users SET password = '{}'".format(new_password))
+            c.execute("UPDATE users SET password = %s", [new_password])
             conn.commit()
             conn.close()
             return redirect(url_for('login_page'))
@@ -249,10 +267,11 @@ def choose_image():
     if request.method == 'GET':
         dir = os.path.dirname(__file__)
 
-        conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+        conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         c = conn.cursor()
         
-        c.execute("SELECT link,coordinates FROM pictures  WHERE show_in_continuous = 1 ORDER BY RANDOM() LIMIT 1")
+        c.execute("SELECT link,coordinates FROM pictures WHERE show_in_continuous = 1 ORDER BY RANDOM() LIMIT 1")
         
         url,coordinates = c.fetchall()[0]
         
@@ -265,22 +284,32 @@ def save_results():
     result = request.form['score']
     dir = os.path.dirname(__file__)
     
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-    c.execute("SELECT * FROM leaderboard WHERE username = '{}'".format(session['username']))
+    #c.execute("SELECT * FROM leaderboard WHERE username = %s", [session['username']])
+    c.execute("SELECT * FROM users WHERE username = %s", [session['username']])
     
     data = c.fetchall()
+    print("DATA FOLLOWS")
+    print(data)
     
     if len(data) == 0:
-        c.execute("INSERT INTO leaderboard (username,n_games,cum_score,avg_score) VALUES ('{0}',{1},{2},{3})".format(session['username'],1,result,result))
+        #c.execute("INSERT INTO leaderboard (username,n_games,cum_score,avg_score) VALUES (%s, %s, %s, %s)", [session['username'],1,result,result])
+        # Something is wrong
+        #
+        #OBSOLETE
+        #
+        print("Error")
     else:
-        _,n_games,cum_score,avg_score = data[0]
+        _,_,_,_,_,n_games,cum_score = data[0]
         n_games = n_games + 1
         cum_score = cum_score + int(result)
-        avg_score = round(float(cum_score)/n_games , 1)
+        #avg_score = round(float(cum_score)/n_games , 1)
                 
-        c.execute("UPDATE leaderboard SET n_games = {0}, cum_score = {1}, avg_score = {2} WHERE username = '{3}'".format(n_games,cum_score,avg_score,session['username']))
+        #c.execute("UPDATE leaderboard SET n_games = %s, cum_score = %s}, avg_score = %s WHERE username = %s", [n_games,cum_score,avg_score,session['username']])
+        c.execute("UPDATE users SET ngames = %s, cum_score = %s WHERE username = %s", [n_games,cum_score,session['username']])
         
     conn.commit()
     conn.close()    
@@ -290,16 +319,18 @@ def save_results():
 def leaderboard_page():
     dir = os.path.dirname(__file__)
 
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-    c.execute("SELECT * FROM leaderboard ORDER BY cum_score DESC")
+#    c.execute("SELECT * FROM leaderboard ORDER BY cum_score DESC")
+    c.execute("SELECT username,ngames,cum_score FROM users ORDER BY cum_score DESC")
     
     cum_users = c.fetchall()
     
-    c.execute("SELECT * FROM leaderboard ORDER BY avg_score DESC")
+#    c.execute("SELECT * FROM leaderboard ORDER BY avg_score DESC")
     
-    avg_users = c.fetchall()
+    avg_users = cum_users
     
     conn.close()
     
@@ -308,7 +339,9 @@ def leaderboard_page():
 
     for i in range(len(cum_users)):
         cl.append([cum_users[i][0],cum_users[i][2],i+1])
-        al.append([avg_users[i][0],avg_users[i][3],i+1])
+        al.append([cum_users[i][0],float(cum_users[i][2])/cum_users[i][1],i+1])
+        
+    al = sorted(al,key=lambda x: x[1],reverse=True)
 
     return render_template("leaderboard.html",cl=cl,al=al)
 
@@ -316,16 +349,27 @@ def leaderboard_page():
 def rank():
     dir = os.path.dirname(__file__)
 
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-    c.execute("SELECT * FROM leaderboard ORDER BY cum_score DESC")
+#    c.execute("SELECT * FROM leaderboard ORDER BY cum_score DESC")
+    c.execute("SELECT username,ngames,cum_score FROM users ORDER BY cum_score DESC")
     
     cum_users = c.fetchall()
+    print(cum_users)
     
-    c.execute("SELECT * FROM leaderboard ORDER BY avg_score DESC")
+    for i in range(len(cum_users)):
+        cum_users[i] = list(cum_users[i])
     
-    avg_users = c.fetchall()
+#    c.execute("SELECT * FROM leaderboard ORDER BY avg_score DESC")
+    
+    avg_users = copy.deepcopy(cum_users)
+    
+    for i in range(len(cum_users)):
+        avg_users[i][2] = float(avg_users[i][2])/avg_users[i][1]
+        
+    avg_users = sorted(avg_users, key=lambda x: x[2], reverse=True)
     
     conn.close()
     
@@ -336,16 +380,16 @@ def rank():
             
         if avg_users[i][0] == session['username']:
             rank2 = i + 1
-            avg_score = avg_users[i][3]
+            avg_score = avg_users[i][2]
             
     return jsonify(rank1,cum_score,rank2,avg_score)
 
 @app.route('/challenge', methods=['GET'])
 def challenge_page():
     if session['logged_in']:
-        dir = os.path.dirname(__file__)
     
-        conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+        conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         c = conn.cursor()
         
         c.execute("SELECT * FROM challenges")
@@ -356,6 +400,10 @@ def challenge_page():
             challenges_list[i] = list(challenges_list[i])
             
         challenges_list = list(reversed(challenges_list))
+        
+        #
+        # GET ROUNDS LIST
+        #
         
         conn.close()
     
@@ -370,31 +418,47 @@ def challenge(chnum):
         if session['logged_in']:
             dir = os.path.dirname(__file__)
 
-            conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+            conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             c = conn.cursor()
                         
             try:
-                c.execute("SELECT current_round,finished FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum, session['username']))
+                #c.execute("SELECT current_round,finished FROM challenge_states WHERE chnum = %s AND username = %s", [chnum, session['username']])
+                c.execute("SELECT user_challenge.finished_rounds FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
                 data = c.fetchall()
+                print(data)
                 if len(data) == 0:
-                    c.execute("INSERT INTO challenge_states (chnum,username,current_round,finished,current_score) VALUES ('{0}','{1}',{2},{3},{4})".format(chnum,session['username'],0,0,0))
-                    c.execute("SELECT pictures.link,pictures.coordinates FROM challenge{0} INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = {1}".format(chnum,0))
+#                    c.execute("INSERT INTO challenge_states (chnum,username,current_round,finished,current_score) VALUES (%s, %s, %s, %, %s)", [chnum,session['username'],0,0,0])
+#                    c.execute("SELECT pictures.link,pictures.coordinates FROM challenge%s INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = %s", [chnum,0])
+                    c.execute("SELECT id FROM users WHERE username = %s",[session['username']])
+                    user_id = c.fetchall()[0][0]
+                    print("wtf")
+                    print("user id: ",user_id)
+                    c.execute("INSERT INTO user_challenge (finished_rounds,score,userid,challengeid) VALUES (%s, %s, %s, %s)",[0,0,user_id,chnum])
+                    c.execute("SELECT pictures.link,pictures.coordinates FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = 1",[chnum])
                     link,coordinates = (c.fetchall())[0]
+                    print(link,coordinates)
                     conn.commit()
                     conn.close()
                     return render_template('challenge.html',photo_url=link,photo_coord=coordinates)
                 else:
-                    current_round,finished = data[0]
+                    current_round = data[0][0] + 1
+                    print(current_round)
+                    c.execute("SELECT * FROM picture_challenge WHERE challengeid = %s",[chnum])
+                    total_rounds = len(c.fetchall())
+                    print(total_rounds)
                     
-                    if finished:
+                    if total_rounds + 1 == current_round:
                         return redirect(url_for('challenge_finished',chnum=chnum))
                     else:
-                        c.execute("SELECT pictures.link,pictures.coordinates FROM challenge{0} INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = {1}".format(chnum,current_round))
+#                        c.execute("SELECT pictures.link,pictures.coordinates FROM challenge%s INNER JOIN pictures ON challenge%s.pictureID = pictures.ID WHERE round = %s", [chnum,chnum,current_round])
+                        c.execute("SELECT pictures.link,pictures.coordinates FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = %s",[chnum,current_round])
                         link,coordinates = (c.fetchall())[0]
                         conn.close()
                         return render_template('challenge.html',photo_url=link,photo_coord=coordinates)
                 
-            except:
+            except Exception as e:
+                print(e)
                 return "Error"
         else:
             flash("Please log in")
@@ -406,22 +470,27 @@ def challenge(chnum):
 def next_challenge_photo(chnum):
     dir = os.path.dirname(__file__)
     
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-    c.execute("SELECT * FROM challenge_states WHERE chnum = '{0}' AND username='{1}'".format(chnum,session['username']))
-    
-    challenge_data = c.fetchall()
-        
-    if challenge_data[0][3]:
-        return redirect(url_for('challenge_finished',chnum=chnum))
-        
-    next_round = challenge_data[0][2] + 1
-    
-    c.execute("UPDATE challenge_states SET current_round = {0} WHERE chnum = '{1}' AND username='{2}'".format(next_round,chnum,session['username']))
-    c.execute("SELECT pictures.link,pictures.coordinates FROM challenge{0} INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = {1}".format(chnum,next_round))
-    
+    c.execute("SELECT user_challenge.finished_rounds,user_challenge.score FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
+    data = c.fetchall()
+    current_round = data[0][0]
+#    c.execute("SELECT * FROM challenge_states WHERE chnum = %s AND username=%s", [chnum,session['username']])
+    c.execute("SELECT pictures.link,pictures.coordinates FROM picture_challenge INNER JOIN pictures ON picture_challenge.pictureid = pictures.id WHERE picture_challenge.challengeid = %s AND picture_challenge.round = %s",[chnum,current_round])
     link,coordinates = (c.fetchall())[0]
+#    challenge_data = c.fetchall()
+        
+#    if challenge_data[0][3]:
+#        return redirect(url_for('challenge_finished',chnum=chnum))
+        
+#    next_round = challenge_data[0][2] + 1
+    
+#    c.execute("UPDATE challenge_states SET current_round = {0} WHERE chnum = '{1}' AND username='{2}'".format(next_round,chnum,session['username']))
+#    c.execute("SELECT pictures.link,pictures.coordinates FROM challenge{0} INNER JOIN pictures ON challenge{0}.pictureID = pictures.ID WHERE round = {1}".format(chnum,next_round))
+    
+#    link,coordinates = (c.fetchall())[0]
     
     conn.commit()
     conn.close()
@@ -432,44 +501,54 @@ def save_challenge_results(chnum):
     result = request.form['score']
     guessed = request.form['guessed']
     correct = request.form['correct']
-
-    dir = os.path.dirname(__file__)
     
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     c = conn.cursor()
     
-    c.execute("SELECT current_round FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
-    current_round = c.fetchall()[0][0]
+#    c.execute("SELECT current_round FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
+#    current_round = c.fetchall()[0][0]
+    c.execute("SELECT user_challenge.finished_rounds,user_challenge.score FROM user_challenge INNER JOIN users ON user_challenge.userid=users.id WHERE users.username = %s AND challengeid = %s", [session['username'],chnum])
+    data = c.fetchall()
+    current_round = data[0][0]
+    cum_score = data[0][1]
     
-    c.execute("SELECT rounds FROM challenges WHERE chnum = '{}'".format(chnum))
-    no_rounds = c.fetchall()[0][0]
+    print("current round is ",current_round," and the score is ",cum_score)
+    
+#    c.execute("SELECT rounds FROM challenges WHERE chnum = '{}'".format(chnum))
+#    no_rounds = c.fetchall()[0][0]
+#    c.execute("SELECT * FROM picture_challenge WHERE challengeid = %s",[chnum])
+#    total_rounds = len(c.fetchall())
             
-    c.execute("SELECT current_score FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
-    cum_score = c.fetchall()[0][0]
+#    c.execute("SELECT current_score FROM challenge_states WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
+#    cum_score = c.fetchall()[0][0]
     cum_score += int(result)
         
-    if current_round + 1 == no_rounds:
-        c.execute("UPDATE challenge_states SET finished = 1 WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
-        c.execute("INSERT INTO challenge{0}_leaderboard (username,cum_score) VALUES ('{1}',{2})".format(chnum,session['username'],cum_score))
+#    if current_round == total_rounds:
+#        c.execute("UPDATE challenge_states SET finished = 1 WHERE chnum = '{0}' AND username = '{1}'".format(chnum,session['username']))
+#        c.execute("INSERT INTO challenge{0}_leaderboard (username,cum_score) VALUES ('{1}',{2})".format(chnum,session['username'],cum_score))
     
-    c.execute("UPDATE challenge_states SET current_score = {0} WHERE chnum = '{1}' AND username = '{2}'".format(cum_score,chnum,session['username']))
-    c.execute('INSERT INTO challenge{0}_results (username,round,score,guessed,correct) VALUES ("{1}",{2},{3},"{4}","{5}")'.format(chnum,session['username'],current_round,result,guessed,correct))
+#    c.execute("UPDATE challenge_states SET current_score = {0} WHERE chnum = '{1}' AND username = '{2}'".format(cum_score,chnum,session['username']))
+    c.execute("SELECT id FROM users WHERE username = %s",[session['username']])
+    user_id = c.fetchall()[0][0]
+    c.execute("UPDATE user_challenge SET score = %s, finished_rounds = %s WHERE challengeid = %s AND userid = %s", [cum_score,current_round + 1,chnum,user_id])
+#    c.execute('INSERT INTO challenge{0}_results (username,round,score,guessed,correct) VALUES ("{1}",{2},{3},"{4}","{5}")'.format(chnum,session['username'],current_round,result,guessed,correct))
     conn.commit()
     conn.close()
 
-    return jsonify('kek')
+    return jsonify('OK')
 
 @app.route('/challenge/<chnum>/results', methods=['POST','GET'])
 def challenge_finished(chnum):
-    try:
-        dir = os.path.dirname(__file__)
-        
-        conn = sqlite3.connect(os.path.join(dir, 'database.db'))
+    try:        
+        conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         c = conn.cursor()
         
-        c.execute("SELECT * FROM challenge{0}_leaderboard ORDER BY cum_score DESC".format(chnum))
+        c.execute("SELECT users.username,user_challenge.score FROM user_challenge INNER JOIN users ON user_challenge.userid = users.id WHERE challengeid = %s  ORDER BY score DESC", [chnum])
         
         cs = c.fetchall()
+        print(cs)
         
         conn.close()
         
@@ -482,84 +561,11 @@ def challenge_finished(chnum):
                 cs[i].append(0)                
 
         return render_template("challenge_finished.html",cs=cs)
-    except:
-        flash("Please log in")
-        return redirect(url_for('login_page'))
-    
-@app.route('/add_challenge', methods=['POST','GET'])
-def add_challenge_page(): 
-    if session['logged_in']:   
-        return render_template('add_challenge.html')
-    else:
+    except Exception as e:
+        print(e)
         flash("Please log in")
         return redirect(url_for('login_page'))
 
-@app.route('/add_challenge/submit',methods=['POST'])
-def submit_challenge():
-    if request.method == 'POST':
-        try:        
-            n_rounds = request.form['rounds']
-            title = request.form['title']
-                    
-            data = []
-                    
-            for i in range(int(n_rounds)):
-                link = request.form['link0']
-                link = request.form['link{}'.format(i)]
-                xcoordinate = request.form['xcoordinate{}'.format(i)]
-                ycoordinate = request.form['ycoordinate{}'.format(i)]
-                                
-                coordinates = coordinates_f(float(xcoordinate),float(ycoordinate))
-    
-                data.append([link,coordinates])
-                
-            dir = os.path.dirname(__file__)    
-            
-            
-            with open(os.path.join(dir,'challenge{}.txt'.format(title)),'w') as f:
-                for i in range(int(n_rounds)):
-                    f.writelines(data[i][0] + '\n')
-                    f.writelines(data[i][1] + '\n')     
-            
-            err,err_i = challenge_validator(data)
-                        
-            if err:            
-                if err == 1:
-                    flash("There was one or more invalid links.")
-                    return render_template('add_challenge.html')
-                elif err == 2:
-                    flash("There were one or more invalid coordinates.")
-                    return render_template('add_challenge.html')
-                else:
-                    flash("There was a problem with the challenge.")
-                    return render_template('add_challenge.html')
-                            
-            create_challenge(title,os.path.join(dir,'challenge{}.txt'.format(title)))
-            
-            return redirect(url_for('challenge_page'))
-        
-        except:
-            flash("There was a problem with the challenge.")
-            return render_template('add_challenge.html')
-    
-@app.route('/challenge/<chnum>/results/individual/',methods=['POST','GET'])
-def individual_results_page(chnum):
-    username = request.args.get('username')
-    
-    dir = os.path.dirname(__file__)
-    
-    conn = sqlite3.connect(os.path.join(dir, 'database.db'))
-    c = conn.cursor()
-    
-    c.execute("SELECT round,score,guessed,correct FROM challenge{0}_results WHERE username='{1}'".format(chnum,username))
-    
-    data = c.fetchall()
-    
-    for i in range(len(data)):
-        data[i] = list(data[i])
-        data[i][0] = data[i][0] + 1  
-    
-    return render_template('individual_results.html',data=data)
 
 
 if __name__ == '__main__':
