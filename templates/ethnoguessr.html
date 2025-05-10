@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-1.10.1.js"></script>
+    <link rel="stylesheet" href="../static/css/play.css">
+    <link rel="stylesheet" href="../static/css/ethnoguessr.css">
+</head>
+
+<body>
+
+<div id = 'top-banner'>
+    <div id="welcome">
+      <h1>
+        Ethno<span style="color: rgba(255,20,30,0.9);">guessr</span>
+      </h1>
+    </div>
+
+    <div class="btnHolder2">
+      <input type="button" id="home_btn" class="btn btn-default" value="HOME">
+    </div>
+</div>
+
+<div style="padding-left: 2%;padding-top: 1%;padding-bottom: 1%;">
+    <button disabled="true" id="guess_btn" onclick="results()">MAKE GUESS</button>
+    <span id="round_counter" style="margin-left: 20px;">Round: 1/20</span>
+</div>
+
+<div id="playHolder">
+    <div id="map"></div>
+    <div id="picture">
+        <img style='display: block;max-width:100%;max-height:100%;width: auto;height: auto;' src="">
+    </div>
+</div>
+
+<script>
+var map;
+var markers = [];
+var lat = -1;
+var lng = -1;
+var score;
+var coordinates;
+var link;
+var picture_id;
+var currentRound = 1;
+var totalScore = 0;
+var usedImages = new Set();
+
+function reload(){
+    if (currentRound < 20) {
+        currentRound++;
+        document.getElementById("round_counter").textContent = "Round: " + currentRound + "/20";
+        loadNextImage();
+    } else {
+        showFinalResults();
+    }
+}
+
+function initMap(){
+    map = new google.maps.Map(document.getElementById('map'),{
+        zoom: 1,
+        center: {lat: 0.0, lng: 0.0},
+        map: map,
+        gestureHandling: 'greedy'
+    });
+
+    map.addListener('click',function(event) {
+        addMarker(event.latLng);
+    });
+}
+
+function addMarker(location){
+    if (markers.length == 1){
+        deleteMarker();
+    };
+    var marker = new google.maps.Marker({
+        position: location,
+        map: map
+    });
+    lat = marker.getPosition().lat();
+    lng = marker.getPosition().lng();
+    markers.push(marker);
+    markers[0].setMap(map);
+    document.getElementById("guess_btn").disabled = false;
+}
+
+function resultsMarkers(guessed,correct){
+    var marker_correct = new google.maps.Marker({
+        position: correct,
+        map: map,
+        title: "Guessed location",
+        label: 'A'
+    });
+
+    var marker_guessed = new google.maps.Marker({
+        position: guessed,
+        map: map,
+        title: "Correct location",
+        label: 'B'
+    });
+
+    var line = new google.maps.Polyline({
+        path: [guessed,correct],
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.7,
+        strokeWeight: 1,
+        map: map
+    });
+
+    marker_correct.setMap(map2);
+    marker_guessed.setMap(map2);
+    line.setMap(map2);
+}
+
+function deleteMarker(){
+    markers[0].setMap(null);
+    markers = [];
+}
+
+function results(){
+    $.post('/save_results', {"lat": lat,"lng": lng, "picture_id": picture_id}, function(response) {
+        console.log(response);
+        latLngB = new google.maps.LatLng(response[1], response[2]);
+        score = response[0];
+        dist = response[3];
+        totalScore += score;
+
+        if (score == -1) {
+            $("body").append("<div id='results_page'><p id='score_n'>You failed to place a marker. You earned 0 points.</p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
+            map2 = new google.maps.Map(document.getElementById('results'),{
+                zoom: 1,
+                center: latLngB,
+                map: map,
+                gestureHandling: 'greedy'
+            });
+            var marker = new google.maps.Marker({
+                position: latLngB,
+                map: map2
+            });
+        }
+        else {
+            latLngA = new google.maps.LatLng(lat, lng);
+            $("body").append("<div id='results_page'><p id='score_n'>Your guess was " + dist + " km from the correct location. You earned " + score + " points out of 1000.</p><button id='nxt_btn' onclick='reload()'>Next picture</button><div id='results'></div></div>");
+            map2 = new google.maps.Map(document.getElementById('results'),{
+                zoom: 1,
+                center: latLngB,
+                map: map,
+                gestureHandling: 'greedy'
+            });
+            resultsMarkers(latLngA,latLngB);
+        }
+    });
+}
+
+function showFinalResults() {
+    $("#playHolder").hide();
+    $("#guess_btn").hide();
+    $("body").append("<div id='results_page'><h2>Game Complete!</h2><p id='score_n'>Your total score: " + totalScore + " out of 20000</p><button id='nxt_btn' onclick='window.location.href=\"/\"'>Back to Home</button></div>");
+}
+
+function loadNextImage() {
+    $.get('/choose_image', function(data,status,link){
+        link = data[0];
+        picture_id = data[1];
+        
+        // Skip if we've already used this image
+        if (usedImages.has(picture_id)) {
+            loadNextImage();
+            return;
+        }
+        
+        usedImages.add(picture_id);
+        var img = document.querySelector('#picture img');
+        img.crossOrigin = "anonymous";
+        img.onload = function() {
+            deleteMarker();
+            document.getElementById("guess_btn").disabled = true;
+        };
+        img.onerror = function() {
+            img.setAttribute('referrerpolicy', 'no-referrer');
+            img.src = link;
+        };
+        img.src = link;
+    });
+}
+
+$(document).ready(function () {
+    $("#home_btn").click(function () {
+        window.location.href = '/'
+    });
+    
+    // Load first image
+    loadNextImage();
+});
+
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC5yfaa66ixSRJXzugJcIO40XMUUcqxqcQ&callback=initMap&libraries=geometry"></script>
+
+</body>
+</html> 
