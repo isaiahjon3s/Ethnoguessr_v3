@@ -20,39 +20,7 @@
   </div>
 
 	<div class="logHolder" style="padding-left: 5%;padding-top: 2%">
-		<h1 id="log">PLEASE LOG IN</h1>
-	</div>
-
-	{% block body %}
-		{% with messages = get_flashed_messages() %}
-		  {% if messages %}
-		  	{% for message in messages%}
-		    	<p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{message}}</p>
-		    {% endfor %}
-		  {% endif %}
-		{% endwith %}
-
-	    {% if error %}
-	      <p style="padding-left: 5%; font: italic 14px/1 'helvetica neue', helvetica, arial, sans-serif;">{{error}}</p>
-	    {% endif %}
-	{% endblock %}
-
-	<div class="formHolder">
-	<form action="/login" method="post">
-		<p style="font: 16px/1 'helvetica neue', helvetica, arial, sans-serif;">USERNAME:</p>
-	    <input type="text" placeholder="Username" name="username" value="{{request.form.username }}">
-	    <p style="font: 16px/1 'helvetica neue', helvetica, arial, sans-serif;">PASSWORD:</p>
-	    <input type="password" placeholder="Password" name="password" value="{{request.form.password }}">
-	    <p></p>
-	    <input id="login_btn" class="btn btn-default" type="submit" value="Login">
-    </form>
-    </div>
-
-    <div class="regresHolder">
-		<p  style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;padding-top: 5%;">Don't have an account yet? <a href="/register">Register</a>.</p>
-	</div>
-	<div class="regresHolder">
-		<p  style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;">Forgot your password? <a href="/forgot-password">Reset</a>.</p>
+		<h1 id="log">Login is no longer required. <a href="/play_mode">Click here to play!</a></h1>
 	</div>
 </body>
 
