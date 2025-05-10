@@ -5,7 +5,6 @@
     <script src="https://code.jquery.com/jquery-1.10.1.js"></script>
     <link rel="stylesheet" href="../static/css/index.css">
 </head>
-</head>
 
 <body>
 
@@ -18,10 +17,6 @@
 
     <div class="btnHolder2">
       <input name="leaderboard_btn" type="button" id="leaderboard_btn" class="btn btn-default" value="Leaderboard">
-    </div>
-
-    <div class="btnHolder2">
-      <input name="logout-btn" type="button" id="logout_btn" class="btn btn-default" value="LOG OUT">
     </div>
   </div>
   
@@ -38,10 +33,6 @@
   <div id="btnHolder" style="padding-top: 150px">
     <input name="train-btn" type="button" id="train_btn" class="btn btn-default" value="PLAY NOW">
   </div>
-    
-  <div class="regHolder" style="padding-top: 150px">
-    <p id="register" style="padding-left: 3%; font: bold 16px/1 'helvetica neue', helvetica, arial, sans-serif;">Don't have an account yet? <a href="/register">Register</a>.</p>
-  </div>
 
 </body>
 
@@ -53,10 +44,7 @@
     $("#leaderboard_btn").click(function () {
       window.location.href = "/leaderboard"
     });
-    $("#logout_btn").click(function () {
-      $.post('/logout');
-    });
-});
+  });
 </script>
 
 </html>

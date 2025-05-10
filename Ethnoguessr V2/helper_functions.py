@@ -6,7 +6,7 @@ Created on Tue Jan 16 10:44:57 2018
 """
 import os
 import math
-from wtforms import Form, TextField, PasswordField, validators
+from wtforms import Form, StringField, PasswordField, validators
 import ast
 import psycopg2
 import os
@@ -17,10 +17,10 @@ import json
 path = os.getcwd()
 
 class RegistrationForm(Form):
-    username = TextField('Username', [validators.Length(min=4, max=20)])
-    email = TextField('Email Address', [validators.Length(min=6, max=50)])
+    username = StringField('Username', [validators.Length(min=4, max=20)])
+    email = StringField('Email Address', [validators.Length(min=6, max=50)])
     password = PasswordField('New Password', [
-    validators.Required(),
+    validators.DataRequired(),
     validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')

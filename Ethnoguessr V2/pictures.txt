@@ -110,15 +110,15 @@ https://i.imgur.com/9WHmyvG.png
 {"lat": 37.377222,"lng": -5.986944}
 https://i.imgur.com/Q13jJEU.png
 {"lat": 37.377222,"lng": -5.986944}
-http://i.imgur.com/WdMGS9C.png
+https://i.imgur.com/WdMGS9C.png
 {"lat": 58.383333,"lng": 24.5}
-http://i.imgur.com/BeXQyon.png
+https://i.imgur.com/BeXQyon.png
 {"lat": 58.383333,"lng": 24.5}
-http://i.imgur.com/C7iIRWZ.png
+https://i.imgur.com/C7iIRWZ.png
 {"lat": 58.383333,"lng": 24.5}
-http://i.imgur.com/Jy42bFQ.png
+https://i.imgur.com/Jy42bFQ.png
 {"lat": 58.383333,"lng": 24.5}
-http://i.imgur.com/QK5W7hr.png
+https://i.imgur.com/QK5W7hr.png
 {"lat": 58.383333,"lng": 24.5}
 https://i.imgur.com/6L1Wjdj.png
 {"lat": -11.699,"lng": 43.256}

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, flash, url_for, redi
 from flask_mail import Mail, Message
 import requests
 import json
-from wtforms import Form, BooleanField, TextField, PasswordField, validators
+from wtforms import Form, BooleanField, StringField, PasswordField, validators
 from helper_functions import RegistrationForm, coordinates_f, calculate_score
 import random
 import numpy as np
@@ -18,15 +18,16 @@ import copy
 
 app = Flask(__name__)
 app.secret_key = '314159265358979323846'
-app.config.update(
-    MAIL_SERVER = 'smtp.gmail.com',
-    MAIL_PORT = 465,
-    MAIL_USE_SSL = True,
-    MAIL_USERNAME = auth.email,
-    MAIL_PASSWORD = auth.email_password
-)
-mail = Mail(app)
 
+# Updated Flask-Mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = auth.email
+app.config['MAIL_PASSWORD'] = auth.email_password
+app.config['MAIL_DEFAULT_SENDER'] = 'chess.endings@gmail.com'
+
+mail = Mail(app)
 
 @app.before_request
 def make_session_permanent():
@@ -81,7 +82,6 @@ def login_page():
         error = "Wrong username or password. Please try again."
         return render_template('login.html',error=error)
 
-
 @app.route('/register',methods = ['POST','GET'])
 def register_page():
     try:
@@ -101,11 +101,9 @@ def register_page():
             c.execute("SELECT * FROM users WHERE email = %s", [email])
             y = c.fetchall()
             
-
             if int(len(x)) == 1 or int(len(y)) == 1:
                 flash("That username or email is already taken, please choose another")
                 return render_template('register.html', form=form)
-
             else:
                 c.execute("INSERT INTO users (username, password, email, confirmed, ngames, cum_score) VALUES (%s, %s, %s, %s, %s, %s)",
                           [username, password, email, 0, 0, 0])
@@ -114,11 +112,12 @@ def register_page():
                 
                 ts = URLSafeTimedSerializer(app.secret_key)
                 token = ts.dumps(email)
-                mail.send_message('Confirmation mail',
-                    sender='chess.endings@gmail.com',
-                    recipients=[email],
-                    body="Thanks for registering on our website. Please, confirm your account by following the url: http://127.0.0.1:5000/confirm/{}".format(token)
+                msg = Message(
+                    'Confirmation mail',
+                    recipients=[email]
                 )
+                msg.body = f"Thanks for registering on our website. Please, confirm your account by following the url: http://127.0.0.1:5000/confirm/{token}"
+                mail.send(msg)
                 
                 c.close()
                 conn.close()
@@ -174,11 +173,13 @@ def forgot_password_page():
         if len(x.fetchall()) == 1:
             ts = URLSafeTimedSerializer(app.secret_key)
             token = ts.dumps(entered_email)
-            mail.send_message('Password reset',
-                sender='chess.endings@gmail.com',
-                recipients=[entered_email],
-                body="Password reset has been requested. Please reset your password by following the url: http://127.0.0.1:5000/reset/{} Link is valid for 1 hour.".format(token)
+            msg = Message(
+                'Password reset',
+                recipients=[entered_email]
             )
+            msg.body = f"Password reset has been requested. Please reset your password by following the url: http://127.0.0.1:5000/reset/{token} Link is valid for 1 hour."
+            mail.send(msg)
+            
             conn.close()
             flash("Password reset email sent")
             return redirect(url_for('login_page'))
@@ -229,7 +230,7 @@ def reset_page():
     else:
         flash("Please log in")
         return redirect(url_for('login_page'))
-
+        
 @app.route('/play_mode', methods=['POST','GET'])
 def play_mode_page():
     return render_template('play_mode.html')
@@ -406,7 +407,7 @@ def challenge(chnum):
                         link,picture_id = (c.fetchall())[0]
                         conn.close()
                         return render_template('challenge.html',photo_url=link,picture_id=picture_id)
-                
+            
             except Exception as e:
                 print(e)
                 return "Error"
@@ -489,8 +490,6 @@ def challenge_finished(chnum):
         print(e)
         flash("Please log in")
         return redirect(url_for('login_page'))
-
-
 
 if __name__ == '__main__':
     app.run()
